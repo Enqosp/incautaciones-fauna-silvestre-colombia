@@ -1,0 +1,112 @@
+table 'Incautaciones Fauna Silvestre'
+	lineageTag: 479e9055-2d3e-4430-acd8-e413f23e475c
+
+	column Año
+		dataType: string
+		lineageTag: b6d4715c-ac4d-4c79-b9f0-307a977cc5f6
+		summarizeBy: none
+		sourceColumn: Año
+
+		annotation SummarizationSetBy = Automatic
+
+	column Departameto
+		dataType: string
+		lineageTag: 52b85044-a1cf-419f-9c2b-107e1202717b
+		dataCategory: StateOrProvince
+		summarizeBy: none
+		sourceColumn: Departameto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Municipio
+		dataType: string
+		lineageTag: 214754d0-2cd5-4097-be0a-46850f4046c5
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: Municipio
+
+		annotation SummarizationSetBy = Automatic
+
+	column Zona
+		dataType: string
+		lineageTag: d6d64a75-6919-44a2-8433-141685ce85e2
+		summarizeBy: none
+		sourceColumn: Zona
+
+		annotation SummarizationSetBy = Automatic
+
+	column Situación
+		dataType: string
+		lineageTag: 519f1420-68dc-4fa3-bbd7-f343a2e16f72
+		summarizeBy: none
+		sourceColumn: Situación
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Autoridad que incautó'
+		dataType: string
+		lineageTag: 6f59f84a-c46a-465c-a42e-90528ea3b711
+		summarizeBy: none
+		sourceColumn: Autoridad que incautó
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Tipo especie'
+		dataType: string
+		lineageTag: d15f684a-1156-4860-b255-2ca99e3765a8
+		summarizeBy: none
+		sourceColumn: Tipo especie
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nombre común'
+		dataType: string
+		lineageTag: 1d3f6bc2-51bf-4a45-9609-4236ab15cb74
+		summarizeBy: none
+		sourceColumn: Nombre común
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nombre científico'
+		dataType: string
+		lineageTag: 8539480d-f76a-41a1-a755-bb752043d88d
+		summarizeBy: none
+		sourceColumn: Nombre científico
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cantidad
+		dataType: int64
+		formatString: 0
+		lineageTag: bc0e1f21-83ce-40ce-bf0c-b4bc7ba6dc52
+		summarizeBy: sum
+		sourceColumn: Cantidad
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Incautaciones Fauna Silvestre' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents("C:\Temp\Ucompensar-20240313T194245Z-001\Ucompensar\Quinto semestre\Extracción, transformación y carga de datos\Transferencia\Incautaciones_Fauna_Silvestre_20250301.csv"),[Delimiter=";", Columns=11, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Encabezados promovidos" = Table.PromoteHeaders(Origen, [PromoteAllScalars=true]),
+				    #"Columnas con nombre cambiado" = Table.RenameColumns(#"Encabezados promovidos",{{"año", "Año"}, {"nom tipo especie", "Tipo especie"}}),
+				    #"Texto recortado" = Table.TransformColumns(#"Columnas con nombre cambiado",{{"Municipio", Text.Trim, type text}, {"Lugar Decomiso", Text.Trim, type text}, {"Situacion", Text.Trim, type text}, {"Autoridad que incauto", Text.Trim, type text}, {"Tipo especie", Text.Trim, type text}, {"Nombre comun", Text.Trim, type text}, {"Nombre cientifico", Text.Trim, type text}, {"Cantidad", Text.Trim, type text}}),
+				    #"Columnas con nombre cambiado1" = Table.RenameColumns(#"Texto recortado",{{"Nombre cientifico", "Nombre"}, {"Cantidad", "Nombre científico"}, {"", "Cantidad"}}),
+				    #"Columnas quitadas" = Table.RemoveColumns(#"Columnas con nombre cambiado1",{"Departamento"}),
+				    #"Columnas con nombre cambiado2" = Table.RenameColumns(#"Columnas quitadas",{{"Municipio", "Departameto"}, {"Lugar Decomiso", "Municipio"}, {"Nombre", "Nombre común"}, {"Tipo especie", "Autoridad que incautó"}, {"Nombre comun", "Tipo especie"}, {"Autoridad que incauto", "Situación"}, {"Situacion", "Zona"}}),
+				    #"Valor reemplazado" = Table.ReplaceValue(#"Columnas con nombre cambiado2","MISTRATO","MISTRATÓ",Replacer.ReplaceText,{"Municipio"}),
+				    #"Valor reemplazado1" = Table.ReplaceValue(#"Valor reemplazado","PERRUNO","PERRO",Replacer.ReplaceText,{"Nombre común"}),
+				    #"Valor reemplazado2" = Table.ReplaceValue(#"Valor reemplazado1","-PERRO","PERRO",Replacer.ReplaceText,{"Nombre común"}),
+				    #"Valor reemplazado3" = Table.ReplaceValue(#"Valor reemplazado2","ZORROPERRO","ZORRO PERRO",Replacer.ReplaceText,{"Nombre común"}),
+				    #"Filas filtradas" = Table.SelectRows(#"Valor reemplazado3", each ([Departameto] = "RISARALDA")),
+				    #"Filas filtradas1" = Table.SelectRows(#"Filas filtradas", each [Municipio] <> null and [Municipio] <> ""),
+				    #"Tipo cambiado" = Table.TransformColumnTypes(#"Filas filtradas1",{{"Cantidad", Int64.Type}}),
+				    #"Filas filtradas2" = Table.SelectRows(#"Tipo cambiado", each ([Autoridad que incautó] <> null and [Autoridad que incautó] <> ""))
+				in
+				    #"Filas filtradas2"
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+
