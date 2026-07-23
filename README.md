@@ -7,6 +7,8 @@
 ## Descripción del Proyecto
 Este proyecto analiza los datos históricos de incautaciones, hallazgos y entregas voluntarias de fauna silvestre en el departamento de **Risaralda, Colombia**. A través del flujo de trabajo de Inteligencia de Negocios y Minería de Datos, se transformaron datos crudos para construir un **Dashboard interactivo en Power BI** enfocado en proporcionar herramientas visuales clave para la toma de decisiones, la protección ambiental y la formulación de políticas públicas de biodiversidad.
 
+> **Fuente de los Datos:**  
+> Los datos utilizados en este proyecto provienen del portal oficial [Datos Abiertos Colombia](https://www.datos.gov.co/Ambiente-y-Desarrollo-Sostenible/Incautaciones-Fauna-Silvestre/d9t8-xgtx).
 ---
 
 ## Metodología Aplicada: Proceso KDD (Knowledge Discovery in Databases)
